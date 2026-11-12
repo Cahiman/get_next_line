@@ -6,7 +6,7 @@
 /*   By: basianno <basianno@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/11/12 07:47:57 by basianno          #+#    #+#             */
-/*   Updated: 2026/11/12 17:23:46 by basianno         ###   ########.fr       */
+/*   Updated: 2026/11/12 19:37:19 by basianno         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -45,30 +45,22 @@ static char	*stash_extraction(char *stash)
 	return (before);
 }
 
-static char	*stash_update(char *stash)
+static char	*stash_update(char *stash, char **line)
 {
 	char	*after;
-	int		i;
 	int		len;
 
 	len = 0;
 	while (stash[len] && stash[len] != '\n')
 		len++;
-	if (stash[len] != '\n')
+	if (!*line || stash[len] != '\n')
 		return (free(stash), NULL);
-	i = len + 1;
-	len = ft_strlen(stash);
-	after = malloc(sizeof(char) * (len + 1));
+	after = ft_strdup(stash + len + 1);
 	if (!after)
-		return (free(stash), NULL);
-	len = 0;
-	while (stash[i])
 	{
-		after[len] = stash[i];
-		len++;
-		i++;
+		free(*line);
+		*line = NULL;
 	}
-	after[len] = '\0';
 	free(stash);
 	return (after);
 }
@@ -79,14 +71,11 @@ static char	*check_verif(int fd, char **stash)
 
 	if (fd < 0 || BUFFER_SIZE <= 0)
 		return (NULL);
-	buffer = malloc(sizeof(char) * (BUFFER_SIZE + 1));
+	buffer = malloc(sizeof(char) * ((size_t)BUFFER_SIZE + 1));
 	if (!*stash)
 		*stash = ft_strdup("");
 	if (!buffer || !*stash)
-	{
-		free (buffer);
-		return (NULL);
-	}
+		return (ft_free(buffer, stash));
 	return (buffer);
 }
 
@@ -115,7 +104,7 @@ char	*get_next_line(int fd)
 	}
 	free (buffer);
 	temp = stash_extraction(stash);
-	stash = stash_update(stash);
+	stash = stash_update(stash, &temp);
 	return (temp);
 }
 
